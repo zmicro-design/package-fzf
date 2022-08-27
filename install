@@ -1,0 +1,51 @@
+#!/bin/bash
+
+set -e
+
+VERSION=0.32.1
+
+help() {
+  echo "Usage:"
+  echo "  zmicro package install fzf <args...>"
+  echo ""
+}
+
+install() {
+  local arch="$(os::arch)"
+  local os="linux"
+  local bin_path=/usr/bin
+  local format="tar.gz"
+
+  if [ "$(os::is_macos)" = "true" ]; then
+    os="darwin"
+    format="zip"
+    bin_path=/usr/local/bin
+  fi
+
+  local tmp_file=/tmp/fzf.${format}
+  local url="https://github.com/junegunn/fzf/releases/download/${VERSION}/fzf-${VERSION}-${os}_${arch}.${format}"
+  curl -fSL $url -o $tmp_file
+
+  cd /tmp
+  tar -zxvf $tmp_file >>/dev/null 2>&1
+
+  sudo mv fzf $bin_path
+
+  rm -rf $tmp_file
+}
+
+core() {
+  if [ "$1" = "-h" ] || [ "$1" = "--help" ]; then
+    help
+    exit 0
+  fi
+
+  install
+  log::success "install fzf success."
+}
+
+run() {
+  core $@
+}
+
+run $@
